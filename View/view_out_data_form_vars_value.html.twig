@@ -1,0 +1,174 @@
+{% extends 'base_manager.html.twig' %}
+
+{% block title %}OrdersAll index{% endblock %}
+
+{% block main %}
+
+    <table class="table table-striped table-sm text-center  " style="font-size: 10pt;">
+        <thead class="thead-dark ">
+        <tr>
+            <th>Preview</th>
+            <th>Принт</th>
+            <th>Пост-Принт</th>
+            <th>Доставка</th>
+            <th>Коментарий</th>
+            <th>Статус</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for form in forms %}
+            <tr>
+                <td>
+                    {% if form.vars.value.upload %}
+                        <div class="prev">
+                            <img class=" mw-100" height="90" {# height="100" #}
+                                 src="{{ asset('uploads/print_file/'~ form.vars.value.upload~'.jpg') }} "></a>
+
+                        </div>
+
+                    {% endif %}
+
+
+                </td>
+                <td class="text-left">
+
+                    <h6 class="font-weight-bold">
+                        {{ form.vars.value.articleNumber }}<br>
+                    </h6>
+                    {% if form.vars.value.ploter %}
+                        Размер - 1000 x {{ form.vars.value.height }}<br>
+                    {% else %}
+                        Размер - {{ form.vars.value.width }} x {{ form.vars.value.height }}<br>
+                    {% endif %}
+
+
+                    {% if form.vars.value.banner %}
+                        {{ form.vars.value.banner.banner }}<br>
+                        {{ form.vars.value.banner.resolution }}
+
+                    {% elseif form.vars.value.film %}
+                        {{ form.vars.value.film.film.filmName }}<br>
+                        {{ form.vars.value.film.resolution }}
+
+                    {% elseif form.vars.value.paper %}
+                        {{ form.vars.value.paper.paper.paperName }}<br>
+                        {{ form.vars.value.paper.resolution }}
+
+                    {% elseif form.vars.value.digitalPaper %}
+                        {{ form.vars.value.digitalPaper.digitalPaper.product.name ~ ' ' ~ form.vars.value.digitalPaper.digitalPaper.digitalPaperName }}
+                        <br>
+                        Цвет - {{ form.vars.value.digitalPaper.printColor }}
+
+                    {% elseif form.vars.value.ploter %}
+                        Длина кривой - {{ form.vars.value.width/1000 }} m<br>
+                        Материал - {{ form.vars.value.ploter.ordersAll.ploter.film.filmName ~ ' ' ~ form.vars.value.ploter.ordersAll.ploter.rall.colorName }}
+
+                        {% if form.vars.value.ploter.ordersAll.ploter.selection.id != 1 %}
+                            <br>
+                            {{ form.vars.value.ploter.ordersAll.ploter.selection.selectionName }}
+                        {% endif %}
+                        {% if form.vars.value.ploter.ordersAll.ploter.cutting.id != 1 %}
+                            <br>
+                            {{ form.vars.value.ploter.ordersAll.ploter.cutting.cuttingName }}
+                        {% endif %}
+
+                    {% endif %}
+                    <br>
+                    Кол-во - {{ form.vars.value.sum * form.vars.value.sumKit }} ( {{ form.vars.value.sum }} шт.
+                    x {{ form.vars.value.sumKit }} к-т) <br>
+
+                </td>
+                <td>
+                    {% if form.vars.value.banner %}
+
+                        {% if form.vars.value.banner.cringle %}
+                            Люверсы: {{ form.vars.value.banner.cringle }}
+                            <br>
+
+                            {% if form.vars.value.banner.inter   %}
+                            Шаг люверса: {{ form.vars.value.banner.inter}}
+                                {% elseif form.vars.value.banner.yourinter  %}
+                                    Шаг люверса: {{ form.vars.value.banner.yourinter}} мм
+                                {% endif %}
+                        {% endif %}
+                        {% if form.vars.value.banner.pocket %}
+                            Карманы: {{ form.vars.value.banner.pocket }}<br>
+                        {% endif %}
+                        {% if form.vars.value.banner.upturn %}
+                            Подвороты :{{ form.vars.value.banner.upturn }}<br>
+                        {% endif %}
+                        {% if form.vars.value.banner.cutting == true %}
+                            Порезать  по изображению <br>
+                        {% endif %}
+
+                    {% elseif form.vars.value.film %}
+
+                        {% if form.vars.value.film.lamination.id != 1 %}
+                            Ламинация: {{ form.vars.value.film.lamination }}  <br>
+                        {% endif %}
+                        {% if form.vars.value.film.cutting == true %}
+                            Порезать  по изображению  <br>
+                        {% endif %}
+
+                    {% elseif form.vars.value.paper %}
+
+                        {% if form.vars.value.paper.lamination.id != 1 %}
+                            Ламинация: {{ form.vars.value.paper.lamination }}<br>
+                        {% endif %}
+                        {% if form.vars.value.paper.cutting == true %}
+                            Порезать  по изображению<br>
+                        {% endif %}
+
+                    {% elseif form.vars.value.digitalPaper %}
+                        {% if form.vars.value.digitalPaper.lamination.id != 1 %}
+                            Ламинация: {{ form.vars.value.digitalPaper.lamination }}
+                        {% endif %}
+
+
+
+                    {% endif %}
+
+                </td>
+                <td>
+
+                    {{ form.vars.value.delivery ? 'г.'~form.vars.value.delivery.city ~ ' '~'ул.' ~ form.vars.value.delivery.street ~ ' ' ~form.vars.value.delivery.numberHouse: 'Самовывоз из офиса' }}
+                    <br>
+                    {% if form.vars.value.user %}
+                        {% if form.vars.value.user.userData %}
+                            {{ form.vars.value.user.userData.company }}<br>
+                            {{ form.vars.value.user.userData.name }} {{ form.vars.value.user.userData.surname }}<br>
+                        {% endif %}
+
+                    {% endif %}
+                    {{ form.vars.value.datetime|date_modify("+1 day")|date("d-m-Y") }}
+
+
+                </td>
+                <td>
+                    {% if form.vars.value.feedback %}
+                        {{ form.vars.value.feedback }}
+                    {% endif %}
+                </td>
+                <td>
+
+                    {{ include('manager/print_manager/_form.html.twig') }}
+
+
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="20">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+{% endblock %}
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('print_check') }}
+
+{% endblock %}
+

@@ -1,0 +1,158 @@
+<div class="col-auto pt-2 ">
+    {{ form_start(form, { 'attr': {'novalidate': 'novalidate' , 'action': path('digital_paper', {'format': format}), 'metod': 'POST'}}) }}
+    <div class="row">
+        <div class="col-md-8">
+            {% if format == 'SRA3' %}
+                {{ form_row(form.digitalFormat, { 'attr': {'class': 'd-none'} }) }}
+                {{ form_row(form.width, { 'attr': {'class': 'd-none'} }) }}
+                {{ form_row(form.height, { 'attr': {'class': 'd-none'} }) }}
+            {% elseif  format == 'Свій розмір' %}
+                <h6>Введіть свій розмір:</h6>
+                <div id="error"></div>
+                <div class="row pb-0 mb-0" >
+                    <div class="col-auto pb-0 mb-0" > {{ form_row(form.width) }}</div>
+                    mm
+                    <div class="col-auto pb-0 mb-0" >   {{ form_row(form.height) }}</div>
+                    mm
+
+                </div>
+                <div class="row  "  >
+                    <h6 class="col-md-3 " ><small>Ширина (mm.)</small></h6>
+                    <h6 class="col-md-3 ml-2" > <small>Высота(mm.)</small></h6>
+                </div>
+                {{ form_row(form.digitalFormat, { 'attr': {'class': 'd-none'} }) }}
+            {% else %}
+                <h6>Виберіть формат:</h6>
+                <div class="row">
+                    <div class="col-md-8">
+                        {{ form_row(form.digitalFormat) }}
+                    </div>
+
+                </div>
+                {{ form_row(form.width, { 'attr': {'class': 'd-none'} }) }}
+                {{ form_row(form.height, { 'attr': {'class': 'd-none'} }) }}
+            {% endif %}
+
+            <h6>Виберіть тип папіру:</h6>
+            <div class="row">
+                <div class="col-md-8">
+                    {{ form_row(form.digital_paper_product) }}
+                </div>
+                <a id="downloadFile"></a>
+                {# <a href="{{ asset('downloads/pluginsDraw/Shablon porezki.cdr') }}" download><img src="{{ asset('imeg/icon/Shablon.svg') }}"></a> #}
+
+            </div>
+
+            <h6>Вкажіть щільність папіру:</h6>
+            <div class="row">
+                <div class="col-md-8">
+                    {{ form_row(form.digital_paper) }}
+                </div>
+
+            </div>
+
+            <hr>
+
+            <div class="row ">
+                <h6 class="col-md-12">Колір друку <small>(dpi.)</small></h6>
+                <div class="col-md-12">{{ form_row(form.print_color) }}</div>
+            </div>
+
+        </div>
+
+        <div class="col-md-4">
+            <div id="geometryPreview"></div>
+
+        </div>
+
+
+        <div class="col-md-12">
+
+            <hr>
+            <div class="row">
+                <h6 class="col-md-12">Ламінація</h6>
+                <div class="col-md-12">{{ form_row(form.lamination) }}</div>
+            </div>
+
+
+
+        {% if format == 'Візитка' or format == 'Календарик' %}
+
+            <div class="row">
+                <h6 class="col-md-12">Закруглення кутів</h6>
+                <div class="col-md-12">{{ form_row(form.services) }}</div>
+
+                <h6 class="col-md-12">Сверління</h6>
+                <div class="col-md-12">{{ form_row(form.serviceHole) }}</div>
+
+            </div>
+
+            {{ form_row(form.serviceFolding, { 'attr': {'class': 'd-none'} }) }}
+            {{ form_row(form.serviceCrease, { 'attr': {'class': 'd-none'} }) }}
+
+        {% elseif  format == 'Свій розмір' %}
+
+            <div class="row">
+                <h6 class="col-md-12">Закруглення кутів</h6>
+                <div class="col-md-12">{{ form_row(form.services) }}</div>
+
+                <h6 class="col-md-12">Сверління</h6>
+                <div class="col-md-12">{{ form_row(form.serviceHole) }}</div>
+
+                <h6 class="col-md-12">Фальц</h6>
+                <div class="col-md-12">{{ form_row(form.serviceFolding) }}</div>
+
+                <h6 class="col-md-12">Біговка</h6>
+                <div class="col-md-12">{{ form_row(form.serviceCrease) }}</div>
+
+            </div>
+
+        </div>
+
+        {% else %}
+            {{ form_row(form.services, { 'attr': {'class': 'd-none'} }) }}
+            {{ form_row(form.serviceHole, { 'attr': {'class': 'd-none'} }) }}
+            {{ form_row(form.serviceFolding, { 'attr': {'class': 'd-none'} }) }}
+            {{ form_row(form.serviceCrease, { 'attr': {'class': 'd-none'} }) }}
+        {% endif %}
+
+
+    </div>
+
+
+    <div class="container justify-content-start">
+        <hr>
+
+        <div class="row">
+            {% if format == 'SRA3' %}
+                <h6 class="col-auto text-left">Кількість аркушів:</h6>
+            {% else %}
+                <h6 class="col-auto text-left">Кількість штук:</h6>
+            {% endif %}
+            <h6 class="col-auto text-left">Кількість комплектів:</h6>
+
+        </div>
+        <div class="row ">
+            <div class="row col-auto "> {{ form_row(form.sum) }}</div>
+            <div class="row col-auto ml-4"> {{ form_row(form.sumKit) }}</div>
+            <h6 class="col-auto ml-5" style="margin-top: 13px;">Вартість:</h6>
+            <div class="col-auto mt-1">
+                <h4 id="rezult">00.00</h4>
+            </div>
+            <div class="col-auto "><a class="btn btn-outline-dark btn-sm rounded-0"
+                                      href="{{ path('partner_page_new') }}">ВІДМІНИТИ
+                </a></div>
+            {{ form_row(form.submit, { 'label': 'ОФОРМИТИ' , 'attr': {'class': 'btn-outline-dark btn-sm rounded-0'}}) }}
+        </div>
+
+    </div>
+
+
+    {{ form_row(form.ordersAll.upload, { 'label_attr': {'class': 'd-none'} }) }}
+    {{ form_row(form.ordersAll.urlupload, { 'attr': {'class': 'd-none'} }) }}
+    {{ form_row(form.ordersAll.feedback, { 'attr': {'class': 'd-none'} }) }}
+    {{ form_end(form) }}
+
+</div>
+
+

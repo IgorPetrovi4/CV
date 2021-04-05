@@ -1,0 +1,176 @@
+{% extends 'base_partner.html.twig' %}
+
+{% block main %}
+    <div class="container row  justify-content-center">
+        <div class="col-md-10">
+
+            <div class="table mt-3 pt-3">
+                <table class="table table-striped table-sm text-center  " style="font-size: 9pt;">
+                    <thead class="thead-dark ">
+                    <tr>
+                        <th scope="col">Операція</th>
+                        <th scope="col">Назва</th>
+                        <th scope="col">Примітка</th>
+                        <th scope="col">Дата</th>
+                        <th scope="col">Дата готовності</th>
+                        <th scope="col">Сума /грн.</th>
+                        <th scope="col">Баланс /грн.</th>
+                    </tr>
+                    </thead>
+
+                    <tbody>
+
+
+                    {% for order in orders %}
+
+                        {% if order is defined %}
+
+                            <tr>
+                                <td> <!-- href trigger modal -->
+                                    {% if order.refill is empty %}
+                                        <a data-toggle="modal" data-target="#exampleModal{{ order.articleNumber }}"
+                                           href="{{ path('partner_page_edit', {'articleNumber': order.articleNumber}) }}">{{ order.articleNumber }}
+                                        </a>
+                                        <!-- Modal -->
+                                        <div class="modal fade bd-example-modal-lg"
+                                             id="exampleModal{{ order.articleNumber }}"
+                                             tabindex="-1" role="dialog"
+                                             aria-labelledby="exampleModalLabel{{ order.articleNumber }}"
+                                             aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                                                <div class="modal-content" >
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title"
+                                                            id="{{ order.articleNumber }}">Заказ
+                                                            №:{{ order.articleNumber }}</h5>
+                                                        <button type="button" class="close" data-dismiss="modal"
+                                                                aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="modal-body" >
+                                                        <div class="container-fluid">
+
+                                                            <div class=" justify-content-start "
+                                                                 style="font-size: 9pt;" >
+                                                                <div class="row">
+                                                                    <div class="col-5">
+                                                                        <table class="table table-striped table-sm ">
+
+                                                                            <tbody>
+                                                                            {% if order.banner %}
+                                                                                {{ include('partner/partner_finance/_banner.html.twig') }}
+                                                                            {% elseif order.film %}
+                                                                                {{ include('partner/partner_finance/_film.html.twig') }}
+                                                                            {% elseif order.paper %}
+                                                                                {{ include('partner/partner_finance/_paper.html.twig') }}
+                                                                            {% elseif order.digitalPaper %}
+                                                                                {{ include('partner/partner_finance/_digital_paper.html.twig') }}
+                                                                            {% elseif order.ploter %}
+                                                                                {{ include('partner/partner_finance/_ploter.html.twig') }}
+                                                                            {% endif %}
+
+                                                                            <tr>
+                                                                                <td class="text-left">Размер</td>
+                                                                                <td>
+                                                                                    {% if order.ploter %}
+                                                                                        1000 mm x {{ order.height }} mm
+                                                                                    {% else %}
+                                                                                        {{ order.width }} mm
+                                                                                        x {{ order.height }} mm
+                                                                                    {% endif %}
+                                                                                </td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td class="text-left"> Количество</td>
+                                                                                <td>{{ order.sum }} шт.</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td class="text-left"> Комплектов</td>
+                                                                                <td>{{ order.sumKit }} к-т.</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td class="text-left"> Тираж </td>
+                                                                                <td>{{ order.sum * order.sumKit }} лист.</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td class="text-left"> Доставка</td>
+                                                                                <td>{{ order.delivery ? 'г.'~order.delivery.city ~ ' '~'ул.' ~ order.delivery.street ~ ' ' ~ order.delivery.numberHouse: 'Самовывоз из офиса' }}</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td class="text-left"> Получатель</td>
+                                                                                <td>{{ order.user.userData.name }} {{ order.user.userData.surname }}</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td class="text-left"> Дата готовности
+                                                                                </td>
+                                                                                <td>{{ order.datetime|date_modify("+1 day")|date("Y-m-d") }}</td>
+                                                                            </tr>
+                                                                            <tr>
+                                                                                <td class="text-left"> Цена</td>
+                                                                                <td>{{ order.price }} грн.</td>
+                                                                            </tr>
+
+
+                                                                            </tbody>
+
+                                                                        </table>
+
+                                                                    </div>
+
+                                                                    <div class="col-7 "  style=" height:300px; line-height: 300px; text-align: center; overflow: hidden; ">
+                                                                            <img class="mh-100" src="{{ asset('uploads/print_file/'~order.upload~'.jpg') }} "
+                                                                                 style=" vertical-align: middle;">
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+
+                                                        </div>
+                                                        <div class="row modal-footer">
+                                                            <div class="col-md-12 text-left">
+                                                                {% if order.feedback %}
+                                                                    Комментарий: {{ order.feedback }}
+                                                                {% endif %}
+                                                            </div>
+                                                            <button type="button"
+                                                                    class="btn btn-sm btn-outline-dark mr-1 rounded-0"
+                                                                    data-dismiss="modal">Закрыть
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        {{ order.articleNumber }}
+                                    {% endif %}
+
+                                </td>  <!-- End Modal -->
+                                <td> {{ order.description }}</td>
+                                <td> {{ order.note }}</td>
+                                <td>{{ order.datetime ? order.datetime|date('d-m-Y H:i:s') : '' }}</td>
+                                <td>{{ order.datetime|date_modify("+1 day")|date("d-m-Y") }}</td>
+                                <td>{{ order.refill is empty ? order.price : order.refill }}</td>
+                                <td>{{ order.balance }}</td>
+                            </tr>
+
+
+                        {% endif %}
+
+                    {% else %}
+                        <tr>
+                            <td colspan="15">Заказов не найдено</td>
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="row justify-content-center">
+                {{ include('partner/partner_finance/_pagination.html.twig') }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
