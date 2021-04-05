@@ -50,20 +50,17 @@ curl_close($ch);
         <label>
 
             <?php
-            $val1 = $_POST['val1'];
-            $val2 = $_POST['val2'];
-            $val11 = $_POST['val11'];
-            $from = $val1;
-            $to = $val2;
-            $amount = $val11;
+            $currency_1 = $_POST['currency_1'];
+            $currency_2 = $_POST['currency_2'];
+            $amount = $_POST['amount'];
             $endpoints2 = 'convert';
-            $ch2 = curl_init($api_url . $endpoints2 . '?access_key=' . $api_token . '&from=' . $from . '&to=' . $to . '&amount=' . $amount);
+            $ch2 = curl_init($api_url . $endpoints2 . '?access_key=' . $api_token . '&from=' . $currency_1 . '&to=' .  $currency_2 . '&amount=' . $amount);
             curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
             $json_data2 = json_decode(curl_exec($ch2), true);
             $convert = $json_data2['result'];
             curl_close($ch2);
 
-            echo '<h1>' . $convert . '</h1>' . $val2;
+            echo '<h1>' . $convert . '</h1>' . $currency_2;
             ?>
 
         </label>
@@ -85,7 +82,7 @@ if (!$link) {
 mysqli_query($link, "CREATE TABLE IF NOT EXISTS date_convert(id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY, data VARCHAR(30) NOT NULL, date_time DATETIME NOT NULL)");
 
 if (!empty($convert)) {
-    mysqli_query($link, "INSERT INTO date_convert(data, date_time) VALUES ('$convert $val2 из $val11 $val1', '$date')");
+    mysqli_query($link, "INSERT INTO date_convert(data, date_time) VALUES ('$convert $currency_2 из $amount  $currency_1', '$date')");
 
 }
 
