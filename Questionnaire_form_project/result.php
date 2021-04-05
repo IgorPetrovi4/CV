@@ -64,7 +64,7 @@ require_once ('config.php');
     </div><!--I Инструкция-->
 
     <div id="form">
-        <form action="emailrezult.php" method="post">
+        <form action="email_result.php" method="post">
             <input type="submit" value="Відправити психологу">
     </div><!--Отправить-->
 

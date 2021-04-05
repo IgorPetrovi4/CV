@@ -27,7 +27,7 @@ require_once ('config.php');
 
 <div id="TestMenu">
 
-    <a href="registr1.php" title="Перейти на главную"><div id="Test1">
+    <a href="register.php" title="Перейти на главную"><div id="Test1">
        Тест 1
         </div></a>
     <a href="/" title="Перейти на главную"><div id="Test2">

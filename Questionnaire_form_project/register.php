@@ -24,7 +24,7 @@ require_once 'vendor/autoload.php';
 <div id="TestMenu">
     <fieldset>
         <legend>Реєстрація</legend>
-        <form action="test1.php" method="post" ><br>
+        <form action="test_page_1.php" method="post" ><br>
             <label>Прізвище<input type="text" name="lastName" required></label><br>
             <label>Імя<input type="text" name="name" required></label><br>
             <label>По Батькові<input type="text" name="patronymic" required></label><br>

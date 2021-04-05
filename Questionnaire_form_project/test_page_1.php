@@ -28,7 +28,7 @@ require_once ('config.php');
         чи неправильних відповідей немає.
     </div><!--I Инструкция-->
     <div id="form">
-        <form action="test11.php" method="post">
+        <form action="test_page_2.php" method="post">
             <p>1. Я спокійний </p>
             <label><input type="radio" name="a1" value="1" required> 1</label>
             <label><input type="radio" name="a1" value="2" required> 2</label>

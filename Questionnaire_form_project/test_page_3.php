@@ -38,7 +38,7 @@ require_once ('config.php');
                 Готовий нести службу зі зброєю”.<br>
             </p>
 
-           <form action="rezult.php" method="post">
+           <form action="result.php" method="post">
 
 
                    <input type="radio" name="t1" value="ТАК ГОТОВИЙ" required > Так <br>

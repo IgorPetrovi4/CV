@@ -28,7 +28,7 @@ require_once ('config.php');
         <p>ІІ.Поставте позначку на шкалі, яка відповідає інтенсивності вияву зазначених чинників:</p>
 
         <p>САМОПОЧУТТЯ</p>
-        <form action="test111.php" method="post">
+        <form action="test_page_3.php" method="post">
         <input type="range" name="r1" min="0" max="100" step="1"><br>
 
         <p>АКТИВНІСТЬ</p>
