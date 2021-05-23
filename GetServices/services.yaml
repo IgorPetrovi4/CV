@@ -1,0 +1,57 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+    #GetHttpService settings
+    username_http_service: '%http_serv_1'
+    password_http_service: '%213243546546756547567'
+    url_http_service: 'http://192.168.1.100'
+    #GetGrpcService settings
+    key_gprc_service: '%45y56hghytu67u6u6u656utyjy6j66b'
+    url_gprc_service: 'grpc://192.168.1.101'
+    #GetRestApiService settings
+    key_rest_service: '%45rhrthrttrrtghrbrbrgtbrrb6b'
+    url_rest_service: 'https://192.168.1.102/json/'
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Tests/'
+
+    # controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
+    App\Controller\:
+        resource: '../src/Controller/'
+        tags: ['controller.service_arguments']
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+
+    App\Service\GetHttpService:
+        arguments:
+            $username: '%username_http_service%'
+            $password: '%password_http_service%'
+            $url: '%url_http_service%'
+
+    App\Service\GetGrpcService:
+        arguments:
+            $serverKey: '%key_gprc_service%'
+            $url: '%url_gprc_service%'
+
+    App\Service\GetRestApiService:
+        arguments:
+            $apiKey: '%key_rest_service%'
+            $url: '%url_rest_service%'
