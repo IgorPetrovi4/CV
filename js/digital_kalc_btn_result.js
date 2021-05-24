@@ -9,7 +9,7 @@ $(document).on('change', '#order_digital_paper_kalc_digitalFormat, #order_digita
 $(document).on('change', '#order_digital_paper_kalc_digital_paper', function () {
     ajax_data2();
 });
-$(document).on('change', '#order_digital_paper_kalc_digitalFormat, #order_digital_paper_kalc_width, #order_digital_paper_kalc_height, #order_digital_paper_kalc_print_color, #order_digital_paper_kalc_lamination, #order_digital_paper_kalc_services, #order_digital_paper_kalc_serviceHole, #order_digital_paper_kalc_serviceFolding, #order_digital_paper_kalc_serviceCrease, #order_digital_paper_kalc_sum, #order_digital_paper_kalc_sumKit', function () {
+$(document).on('change', '#order_digital_paper_kalc_digitalFormat, #order_digital_paper_kalc_width, #order_digital_paper_kalc_height, #order_digital_paper_kalc_print_color, #order_digital_paper_kalc_lamination, #order_digital_paper_kalc_services, #order_digital_paper_kalc_serviceHole, #order_digital_paper_kalc_serviceFolding, #order_digital_paper_kalc_serviceCrease, #order_digital_paper_kalc_sum, #order_digital_paper_kalc_sumKit, #order_digital_paper_kalc_ordersAll_user', function () {
     ajax_data();
 
 })
@@ -17,53 +17,30 @@ $(document).on('input', '#order_digital_paper_kalc_width, #order_digital_paper_k
     ajax_data();
 })
 function ajax_data() {
-    var digitalFormat = $(".my-digital-format input[type=radio]:checked").val();
-    var yourSizeWidth = $('input[id="order_digital_paper_kalc_width"]').val();
-    var yourSizeHeight = $('input[id="order_digital_paper_kalc_height"]').val();
-    var digitalProduct = $(".my-digital-product input[type=radio]:checked").val();
-    var digitalPaper = $(".my-digital-paper input[type=radio]:checked").val();
-    var printColor = $(".my-print-digital-color input[type=radio]:checked").val();
-    var servicesRounding = $(".my-services-rounding input[type=radio]:checked").val();
-    var servicesHole = $(".my-services-hole input[type=radio]:checked").val();
-    var servicesFolding = $(".my-services-folding input[type=radio]:checked").val();
-    var servicesCrease = $(".my-services-crease input[type=radio]:checked").val();
-    var lamination = $(".my-lamination-digital-paper input[type=radio]:checked").val();
-    var sum = $('input[id="order_digital_paper_kalc_sum"]').val();
-    var sumKit = $('input[id="order_digital_paper_kalc_sumKit"]').val();
-
+    var formatInUrl =  document.forms.order_digital_paper_kalc.id;
+    var oldForm = document.forms.order_digital_paper_kalc,
+        formData = new FormData(oldForm)
+    ;
     $.ajax({
-        url: "/digital_paper_kalc/ajax",
-        type: "GET",
+        url: "/digital_paper_kalc/ajax?format ="+formatInUrl,
+        type: "POST",
         cache: false,
-        data: {
-            format: format,
-            digitalFormat:digitalFormat,
-            yourSizeWidth:yourSizeWidth,
-            yourSizeHeight:yourSizeHeight,
-            digitalProduct: digitalProduct,
-            digitalPaper: digitalPaper,
-            printColor: printColor,
-            servicesRounding:servicesRounding,
-            servicesHole:servicesHole,
-            servicesFolding:servicesFolding,
-            servicesCrease:servicesCrease,
-            lamination: lamination,
-            sum: sum,
-            sumKit:sumKit,
-        },
+        data: formData,
+        processData: false,  // Сообщить jQuery не передавать эти данные
+        contentType: false,   // Сообщить jQuery не передавать тип контента
 
         success: function (response) {
             $("#rezult").replaceWith(function () {
                 var elem = $('<h4 id="rezult"></h4>');
                 return elem.append('' + response + 'грн.' + '');
             })
-           // console.log(response);
         },
     });
 }
 
 
 function ajax_data1() {
+    var formatInUrl =  document.forms.order_digital_paper_kalc.id;
     var idProduct = $(".my-digital-product input[type=radio]:checked").val();
     var idFormat = $(".my-digital-format input[type=radio]:checked").val();
     $.ajax({
@@ -71,7 +48,7 @@ function ajax_data1() {
         type: 'GET',
         cache: false,
         data: {
-            format: format,
+            format: formatInUrl,
             idFormat: idFormat,
             idProduct:idProduct,
         },

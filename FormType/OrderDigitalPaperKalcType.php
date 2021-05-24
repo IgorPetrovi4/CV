@@ -7,27 +7,20 @@ use App\Entity\DigitalLamination;
 use App\Entity\DigitalPaperList;
 use App\Entity\DigitalPaperProduct;
 use App\Entity\DigitalPrintColor;
-use App\Entity\DigitalProduct;
 use App\Entity\DigitalServiceCrease;
 use App\Entity\DigitalServiceFolding;
 use App\Entity\DigitalServiceHole;
 use App\Entity\DigitalServices;
 use App\Entity\OrderDigitalPaperKalc;
-use App\Repository\DigitalPaperListRepository;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Security\Core\Security;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\Range;
 
 class OrderDigitalPaperKalcType extends AbstractType
 {
@@ -62,19 +55,19 @@ class OrderDigitalPaperKalcType extends AbstractType
                 },
             ])
             ->add('width', IntegerType::class, [
-                'label'=>false,
-                'data' => $options['format']  == 'Свій розмір' ? 297: null,
+                'label' => false,
+                'data' => $options['format'] == 'Свій розмір' ? 297 : null,
                 //'constraints' => [new Range(['min' => 40, 'max'=> 450])],
                 'attr' => ['class' => 'form-control-sm'],
-                'row_attr'=>['class' => 'p-0 m-0'],
+                'row_attr' => ['class' => 'p-0 m-0'],
 
             ])
             ->add('height', IntegerType::class, [
-                'label'=>false,
-                'data' => $options['format']  == 'Свій розмір' ? 420: null,
+                'label' => false,
+                'data' => $options['format'] == 'Свій розмір' ? 420 : null,
                 //'constraints' => [new Range(['min' => 40, 'max'=> 450])],
                 'attr' => ['class' => 'form-control-sm'],
-                'row_attr'=>['class' => 'p-0 m-0'],
+                'row_attr' => ['class' => 'p-0 m-0'],
 
 
             ])
@@ -89,7 +82,7 @@ class OrderDigitalPaperKalcType extends AbstractType
                 'label_attr' => ['class' => 'mt-2'],
                 'class' => DigitalPaperProduct::class,
                 'query_builder' => function (EntityRepository $er) use ($options) {
-                    if ($options['format'] == 'Флаєр' || $options['format'] == 'Візитка' || $options['format'] == 'Буклет' ||  $options['format'] == 'Календарик') {
+                    if ($options['format'] == 'Флаєр' || $options['format'] == 'Візитка' || $options['format'] == 'Буклет' || $options['format'] == 'Календарик') {
                         return $er->createQueryBuilder('dp')
                             ->where('dp.id IN (:id)')
                             ->setParameter('id', [1, 2, 3]);
@@ -129,7 +122,6 @@ class OrderDigitalPaperKalcType extends AbstractType
                 'label_attr' => ['class' => 'mt-2'],
                 'class' => DigitalLamination::class,
             ])
-
             ->add('services', EntityType::class, [
                 'label' => false,
                 'multiple' => false,
@@ -142,7 +134,6 @@ class OrderDigitalPaperKalcType extends AbstractType
                 'class' => DigitalServices::class,
 
             ])
-
             ->add('serviceHole', EntityType::class, [
                 'label' => false,
                 'multiple' => false,
@@ -155,7 +146,6 @@ class OrderDigitalPaperKalcType extends AbstractType
                 'class' => DigitalServiceHole::class,
 
             ])
-
             ->add('serviceFolding', EntityType::class, [
                 'label' => false,
                 'multiple' => false,
@@ -168,7 +158,6 @@ class OrderDigitalPaperKalcType extends AbstractType
                 'class' => DigitalServiceFolding::class,
 
             ])
-
             ->add('serviceCrease', EntityType::class, [
                 'label' => false,
                 'multiple' => false,
@@ -181,7 +170,6 @@ class OrderDigitalPaperKalcType extends AbstractType
                 'class' => DigitalServiceCrease::class,
 
             ])
-
             ->add('sum', TextType::class, [
                 'label' => false,
                 'data' => '1',
@@ -208,6 +196,21 @@ class OrderDigitalPaperKalcType extends AbstractType
                 'attr' => ['class' => 'btn-danger btn-sm'],
 
             ]);
+        if ($this->security->isGranted("ROLE_USER_GUEST")) {
+            $builder
+                ->add('ordersAll', OrdersAllCalcType::class, [
+                    'label' => false,
+                ]);
+
+        }
+        if ($this->security->isGranted("ROLE_MANAGER")) {
+            $builder
+                ->add('ordersAll', OrdersAllManagerType::class, [
+                    'label' => false,
+
+                ]);
+
+        }
 
     }
 

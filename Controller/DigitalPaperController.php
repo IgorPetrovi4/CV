@@ -2,22 +2,21 @@
 
 namespace App\Controller\Calcs;
 
-use App\Entity\Calcs\DigitalPaperCalc;
 use App\Entity\OrderDigitalPaperKalc;
 use App\Entity\OrdersAll;
 use App\Form\OrderDigitalPaperKalcType;
 use App\Repository\DigitalFormatListRepository;
-use App\Repository\DigitalLaminationRepository;
 use App\Repository\DigitalPaperListRepository;
-use App\Repository\DigitalPaperProductRepository;
 use App\Repository\DigitalPrintColorRepository;
 use App\Repository\DigitalProductRepository;
 use App\Repository\DigitalServiceCreaseRepository;
 use App\Repository\DigitalServiceFoldingRepository;
 use App\Repository\DigitalServiceHoleRepository;
-use App\Repository\OrdersAllRepository;
-use App\Repository\UserMarkupRepository;
-use App\Service\DigitalPaperCalckService;
+use App\Service\Calcs\ArticleGeneratorService;
+use App\Service\Calcs\BalanceUserService;
+use App\Service\Calcs\DeleteUnregisteredOrderService;
+use App\Service\Calcs\SelectUserService;
+use App\Service\Calcs\DigitalPaperCalckService;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -34,148 +33,152 @@ class DigitalPaperController extends AbstractController
      * @param Request $request
      * @param DigitalPaperCalckService $digitalPaperCalckService
      * @param DigitalProductRepository $digitalProductRepository
-     * @param OrdersAllRepository $ordersAllRepository
-     * @param UserMarkupRepository $markupRepository
      * @return Response
      */
     public function index(
         $format,
         Request $request,
-        DigitalPaperCalckService $digitalPaperCalckService,
         DigitalProductRepository $digitalProductRepository,
-        OrdersAllRepository $ordersAllRepository,
-        UserMarkupRepository $markupRepository
+        DigitalPaperCalckService $digitalPaperCalckService,
+        DeleteUnregisteredOrderService $deleteUnregisteredOrder,
+        SelectUserService $selectUser,
+        BalanceUserService $balanceUser,
+        ArticleGeneratorService $articleGeneratorService
 
     ): Response
     {
 
-        //  удаление неоформленного заказа перед заказом нового
-        $orderSales = $ordersAllRepository->findBy(['user' => $this->getUser(), 'sales' => null]);
-
-        if (!empty($orderSales)) {
-            $entityManager = $this->getDoctrine()->getManager();
-            foreach ($orderSales as $order_sale) {
-                $entityManager->remove($order_sale);
-                $entityManager->flush();
-            }
+        // удаляем не дооформленный заказ для партнера
+        if ($this->isGranted('ROLE_PARTNER')) {
+            $deleteUnregisteredOrder->delete($this->getUser());
         }
 
         //форма пленки
         $orderDigitalPaperKalc = new OrderDigitalPaperKalc();
-
         // связь с таблицей всех заказов
         $ordersAll = new OrdersAll();
-        $ordersAll->setPaper($orderDigitalPaperKalc->getId());
         $orderDigitalPaperKalc->setOrdersAll($ordersAll);
 
-        $form_digital_paper = $this->createForm(OrderDigitalPaperKalcType::class, $orderDigitalPaperKalc, [
+        $form = $this->createForm(OrderDigitalPaperKalcType::class, $orderDigitalPaperKalc, [
             'format' => $format,
             'id_choice' => $digitalProductRepository->findOneBy(['product_name' => $format])->getFormat()->getValues()[0]->getId()
         ]);
+        $form->handleRequest($request);
 
-        $form_digital_paper->handleRequest($request);
-
-        if ($form_digital_paper->isSubmitted() && $form_digital_paper->isValid()) {
-            // данные для сервиса
-
-
-            // подготовлено к переносу в ООП  $arr_data[].
-            $digitalPaperCalc = new DigitalPaperCalc();
-            $digitalPaperCalc->setDigitalFormat($form_digital_paper->getData()->getDigitalFormat()->getId());
-            $digitalPaperCalc->setYourSizeWidth($form_digital_paper->getData()->getWidth());
-            $digitalPaperCalc->setYourSizeHeight($form_digital_paper->getData()->getHeight());
-            $digitalPaperCalc->setFormat($format);
-            $digitalPaperCalc->setDigitalPaper($form_digital_paper->getData()->getDigitalPaper()->getId());
-            $digitalPaperCalc->setPrintColor($form_digital_paper->getData()->getPrintColor()->getId());
-            $digitalPaperCalc->setLamination($form_digital_paper->getData()->getLamination()->getId());
-            $digitalPaperCalc->setServicesRounding($form_digital_paper->getData()->getServices()->getId());
-            $digitalPaperCalc->setServicesHole($form_digital_paper->getData()->getServiceHole()->getId());
-            $digitalPaperCalc->setServicesFolding($form_digital_paper->getData()->getServiceFolding()->getId());
-            $digitalPaperCalc->setServicesCrease($form_digital_paper->getData()->getServiceCrease()->getId());
-            $digitalPaperCalc->setSum($form_digital_paper->getData()->getSum());
-            $digitalPaperCalc->setSumKit($form_digital_paper->getData()->getSumKit());
-
-            $priceSum = $digitalPaperCalckService->DigitalPaperCalk($digitalPaperCalc);
-
-            // Партнеру
-            if ($this->isGranted("ROLE_PARTNER")) {
-                //просчет баланса
-                $last_balance = $ordersAllRepository->findBy(['user' => $this->getUser()], ['id' => 'DESC'], 1);
-                $ordersAll->setBalance(round(!empty($last_balance) ? $last_balance[0]->getBalance() - $priceSum : '-' . $priceSum, 2));
-                $ordersAll->setPriceMarkup(round(($priceSum * ($markupRepository->findBy(['user' => $this->getUser()])[0]->getDigitalPaperKalc()) / 100) + $priceSum, 2));
-            }
-
-            $ordersAll->setWidth($form_digital_paper->getData()->getDigitalFormat()->getWidth());
-            $ordersAll->setHeight($form_digital_paper->getData()->getDigitalFormat()->getHeight());
-            $ordersAll->setPrice($priceSum);
-            $ordersAll->setSum($form_digital_paper->getData()->getSum());
-            $ordersAll->setSumKit($form_digital_paper->getData()->getSumKit());
-
-            // генерация номера артикля PL - пленка, рандом 4, текущая дата
-            $articleNumber = 'DP-' . mt_rand(1111, 9999) . '-' . date("ymd");
-            $ordersAll->setArticleNumber($articleNumber);
-
-            // усли нет юзера то ставим сесию
-            if (!empty($this->getUser())) {
-                $ordersAll->setUser($this->getUser());
+        if ($form->isSubmitted() && $form->isValid()) {
+            //выбираем юзера
+            $user = $selectUser->getSelectUser($form);
+            if (empty($user)) {
+                $ordersAll->setNotUser($request->getSession()->getId());
             } else {
-                $session = $request->getSession()->getId();
-                $ordersAll->setNotUser($session);
+                $ordersAll->setUser($user);
             }
+
+            //считаем сумму заказа
+            $digitalPaperCalckService->setSelectUser($user);
+            $digitalPaperCalckService->setForm($form);
+            $priceSum = $digitalPaperCalckService->getSum();
+
+            //просчет баланса
+            if ($user->getRoles()[0] === "ROLE_PARTNER") {
+
+                if ($balanceUser->getLastBalance($user) > $priceSum) {
+                    $ordersAll->setPaid(true);
+                }
+                $ordersAll->setBalance($balanceUser->getBalance($priceSum, $user));
+                $ordersAll->setPriceMarkup(($priceSum * $digitalPaperCalckService->getMarkup() / 100) + $priceSum);
+            }
+
+
+           if (!empty($form->getData()->getWidth())){
+               $ordersAll->setWidth($form->getData()->getWidth());
+               $ordersAll->setHeight($form->getData()->getHeight());
+           } else {
+               $ordersAll->setWidth($form->getData()->getDigitalFormat()->getWidth());
+               $ordersAll->setHeight($form->getData()->getDigitalFormat()->getHeight());
+           }
+
+            $ordersAll->setPrice($priceSum);
+            $ordersAll->setSum($form->getData()->getSum());
+            $ordersAll->setSumKit($form->getData()->getSumKit());
+
+
+            // генерация номера артикля BR - баннер, рандом 4, текущая дата
+            $ordersAll->setArticleNumber($articleGeneratorService->getArticleNumber('DP'));
+
 
             $ordersAll->setDatetime(new DateTimeImmutable());
+            if ($this->isGranted("ROLE_MANAGER")) {
+                $ordersAll->setSales(1);
+            }
 
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($orderDigitalPaperKalc);
             $entityManager->flush();
-
-
-            $this->addFlash('success', 'Ваш заказ добавлен в корзину!');
-
-            if ($this->isGranted('ROLE_PARTNER')) {
+           // $this->addFlash('success', 'Ваш заказ добавлен в корзину!');
+            // возвращаем после заказа на роут ..
+            if ($this->isGranted("ROLE_PARTNER")) {
                 return $this->redirectToRoute('partner_order_shop');
+            } elseif ($this->isGranted("ROLE_MANAGER")) {
+                return $this->redirectToRoute('manager_page');
+            } else {
+                return $this->redirectToRoute('order_shop');
             }
-            return $this->redirectToRoute('order_shop');
+
         }
 
-        return $this->render('new_pages/calcs/digital_paper_page/form_calculator_digital_paper.html.twig', [
-            'form' => $form_digital_paper->createView(),
-            'format' => $format,
-            'product_size' => $digitalProductRepository->findAll(),
+        if ($this->isGranted("ROLE_PARTNER")) {
+            return $this->render('new_pages/calcs/digital_paper_page/partner_form_calculator_digital_paper.html.twig', [
+                'form' => $form->createView(),
+                'format' => $format,
+                 'product_size' => $digitalProductRepository->findAll(),
 
-        ]);
+            ]);
+        } elseif ($this->isGranted("ROLE_MANAGER")) {
+            return $this->render('new_pages/calcs/digital_paper_page/manager_form_calculator_digital_paper.html.twig', [
+                'form' => $form->createView(),
+                'format' => $format,
+                'product_size' => $digitalProductRepository->findAll(),
+
+            ]);
+        } else {
+            return $this->render('new_pages/calcs/digital_paper_page/form_calculator_digital_paper.html.twig', [
+                'form' => $form->createView(),
+                'format' => $format,
+                'product_size' => $digitalProductRepository->findAll(),
+
+
+            ]);
+        }
+
     }
 
 
     /**
-     * @Route("/digital_paper_kalc/ajax", name="digitalPaperKalc", methods={"GET"})
+     * @Route("/digital_paper_kalc/ajax", name="digitalPaperKalc", methods={"GET","POST"})
      * @param Request $request
      * @param DigitalPaperCalckService $digitalPaperCalckService
      * @return JsonResponse
      */
-    public function kalc(Request $request, DigitalPaperCalckService $digitalPaperCalckService, UserMarkupRepository $markupRepository)
+    public function kalc(Request $request,  DigitalProductRepository $digitalProductRepository, DigitalPaperCalckService $digitalPaperCalckService, SelectUserService $selectUser)
     {
-        $arr_data = [
-            'digitalFormat' => $request->query->get('digitalFormat'),
-            'yourSizeWidth' => $request->query->get('yourSizeWidth'),
-            'yourSizeHeight' => $request->query->get('yourSizeHeight'),
-            'format' => $request->query->get('format'),
-            'digitalPaper' => $request->query->get('digitalPaper'),
-            'printColor' => $request->query->get('printColor'),
-            'lamination' => $request->query->get('lamination'),
-            'servicesRounding' => $request->query->get('servicesRounding'),
-            'servicesHole' => $request->query->get('servicesHole'),
-            'servicesFolding' => $request->query->get('servicesFolding'),
-            'servicesCrease' => $request->query->get('servicesCrease'),
-            'sum' => $request->query->get('sum'),
-            'sumKit' => $request->query->get('sumKit'),
-            'markup' => $this->isGranted('ROLE_PARTNER') ? $markupRepository->findBy(['user' => $this->getUser()])[0]->getDigitalPaperKalc() : 0,
-        ];
-
-
-        $priceSumUser = $digitalPaperCalckService->DigitalPaperCalk($arr_data);
-
-        return new JsonResponse($priceSumUser);
+        $format  = $request->query->get('format_');
+        $orderDigitalPaperKalc = new OrderDigitalPaperKalc();
+        $form = $this->createForm(OrderDigitalPaperKalcType::class, $orderDigitalPaperKalc, [
+            'format' => $format,
+            'id_choice' => $digitalProductRepository->findBy(['product_name'=>$format])[0]->getFormat()->getValues()[0]->getId()
+        ]);
+        $form->handleRequest($request);
+        $user = $selectUser->getSelectUser($form);
+        $digitalPaperCalckService->setSelectUser($user);
+        $digitalPaperCalckService->setForm($form);
+        $priceSumUser = $digitalPaperCalckService->getSum();
+        if ($this->isGranted("ROLE_PARTNER")){
+            $price = round(($priceSumUser * $digitalPaperCalckService->getMarkup() / 100) + $priceSumUser, 2);
+            return new JsonResponse($price);
+        } else{
+            return new JsonResponse($priceSumUser);
+        }
     }
 
 
