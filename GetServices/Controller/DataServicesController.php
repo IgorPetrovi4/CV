@@ -29,10 +29,15 @@ class DataServicesController extends AbstractController
         $http = $getHttpService->getSettings();
         $gprc = $getGrpcService->getSettings();
 
+
+
         $setting->setField1($api->getString());
-        $setting->getField2($api->getBoolean());
-        $setting->getField3($http->getArray());
-        $setting->getField4($gprc->getInteger());
+        $setting->setField2($api->getBoolean());
+        $setting->setField3($http->getArray());
+        $setting->setField4($gprc->getInteger());
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($setting);
+        $entityManager->flush();
 
 
         $data = [
