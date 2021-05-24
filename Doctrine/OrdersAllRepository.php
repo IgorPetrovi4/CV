@@ -31,15 +31,83 @@ class OrdersAllRepository extends ServiceEntityRepository
             ->setParameter(2,true);
     }
 
+    public function getCountUserOrders($user = null)
+    {
+        return $this->createQueryBuilder("o")
+            ->select('COUNT(o.id)')
+            ->where('o.user = ?1')
+            ->andWhere('o.sales = ?2')
+            ->setParameter(1,$user)
+            ->setParameter(2,true)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getAllOrdersUsersManager($page, $limit, $users = [], $search =null, $date_start = null, $date_end =null )
+    {
+        return $this->createQueryBuilder("o")
+            ->andWhere('o.user IN (:users)')
+            ->andWhere('o.sales = ?2')
+            ->andWhere('o.datetime >= :date_start')
+            ->andWhere('o.datetime <= :date_end')
+            ->andWhere('o.description LIKE :search OR o.article_number LIKE :search')
+            ->orderBy('o.id', 'DESC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit)
+            ->setParameter('users',$users)
+            ->setParameter('search', '%'.$search.'%')
+            ->setParameter('date_start', $date_start)
+            ->setParameter('date_end', $date_end)
+            ->setParameter(2,true)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getNewPosOrdersUsersManager($page, $limit, $users = [])
+    {
+        return $this->createQueryBuilder("o")
+            ->where('o.user IN (:users)')
+            ->andWhere('o.delivery IS NOT NULL')
+            ->andWhere('o.delivery LIKE :OF')
+            ->andWhere('o.sales = ?1')
+            ->orderBy('o.id', 'DESC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setParameter('1',true)
+            ->setParameter('users',$users)
+            ->setParameter('OF', '%Відділення%')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getDeliveryOrdersUsersManager($page, $limit, $users = [])
+    {
+        return $this->createQueryBuilder("o")
+            ->where('o.user IN (:users)')
+            ->andWhere('o.delivery IS NOT NULL')
+            ->andWhere('o.delivery NOT LIKE :OF')
+            ->andWhere('o.delivery NOT LIKE :SV')
+            ->andWhere('o.sales = ?1')
+            ->orderBy('o.id', 'DESC')
+            ->setFirstResult(($page - 1) * $limit)
+            ->setParameter('1',true)
+            ->setParameter('users',$users)
+            ->setParameter('OF', '%Відділення%')
+            ->setParameter('SV', '%Самовывоз%')
+            ->getQuery()
+            ->getResult();
+    }
+
+
 
     public function getAllOrdersManagerDP()
     {
         return $this->createQueryBuilder("o")
             ->where('o.status IN (:id)')
-            ->andWhere('o.article_number LIKE :DP')
+            ->andWhere('o.article_number LIKE :DP OR o.article_number LIKE :MO')
             ->orderBy('o.id', 'DESC')
             ->setParameter('id',[3,4,5])
             ->setParameter('DP', 'DP%')
+            ->setParameter('MO', 'MO%')
             ->getQuery()
             ->getResult();
     }
@@ -49,13 +117,28 @@ class OrdersAllRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder("o")
             ->where('o.status IN (:id)')
-            ->andWhere('o.article_number NOT LIKE :DP')
+            ->andWhere('o.article_number NOT LIKE :DP OR o.article_number LIKE :MO')
             ->orderBy('o.id', 'DESC')
             ->setParameter('id',[3,4,5])
             ->setParameter('DP', 'DP%')
+            ->setParameter('MO', 'MO%')
             ->getQuery()
             ->getResult();
     }
+
+
+    public function getSumCreditUser($user)
+    {
+        return$this->createQueryBuilder("o")
+            ->select('SUM(o.price)')
+            ->where('o.paid IS NULL')
+            ->andWhere('o.user = ?2')
+            ->setParameter(2,$user)
+            ->getQuery()
+            ->getResult();
+    }
+
+
 
     public function getSumPriceAllOrdersUser($user)
     {
@@ -70,32 +153,61 @@ class OrdersAllRepository extends ServiceEntityRepository
     }
 
 
-    // /**
-    //  * @return OrdersAll[] Returns an array of OrdersAll objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    public function getRoleOrders($role)
     {
-        return $this->createQueryBuilder('o')
-            ->andWhere('o.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('o.id', 'ASC')
-            ->setMaxResults(10)
+        return $this->createQueryBuilder("o")
+            ->where('o.refill IS NULL')
+            ->andWhere('o.sales = ?1')
+            ->leftJoin('o.user', 'u')
+            ->orderBy('o.id', 'DESC')
+            ->andWhere('u.roles  LIKE :roles')
+            ->setParameter('1',true)
+            ->setParameter('roles','%"'.$role.'"%')
             ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+            ->getResult();
 
-    /*
-    public function findOneBySomeField($value): ?OrdersAll
-    {
-        return $this->createQueryBuilder('o')
-            ->andWhere('o.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
     }
-    */
+
+
+    public function getClientOrders($role)
+    {
+        return $this->createQueryBuilder("o")
+            ->where('o.refill IS NULL')
+            ->andWhere('o.user IS NULL')
+            ->orderBy('o.id', 'DESC')
+            ->leftJoin('o.user', 'u')
+            ->orWhere('u.roles  LIKE :roles')
+            ->setParameter('roles','%"'.$role.'"%')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getNewPosOrders()
+    {
+        return $this->createQueryBuilder("o")
+            ->where('o.delivery IS NOT NULL')
+            ->andWhere('o.delivery LIKE :OF')
+            ->andWhere('o.sales = ?1')
+            ->orderBy('o.id', 'DESC')
+            ->setParameter('1',true)
+            ->setParameter('OF', '%Відділення%')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getDeliveryOrders()
+    {
+        return $this->createQueryBuilder("o")
+            ->andWhere('o.delivery IS NOT NULL')
+            ->andWhere('o.delivery NOT LIKE :OF')
+            ->andWhere('o.delivery NOT LIKE :SV')
+            ->andWhere('o.sales = ?1')
+            ->orderBy('o.id', 'DESC')
+            ->setParameter('1',true)
+            ->setParameter('OF', '%Відділення%')
+            ->setParameter('SV', '%Самовывоз%')
+            ->getQuery()
+            ->getResult();
+    }
+
 }
