@@ -43,7 +43,7 @@ class OrdersAllRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function getAllOrdersUsersManager($page, $limit, $users = [], $search =null, $date_start = null, $date_end =null )
+    public function getAllOrdersUsersManager($page, $limit, $users, $search, $date_start, $date_end )
     {
         return $this->createQueryBuilder("o")
             ->andWhere('o.user IN (:users)')
