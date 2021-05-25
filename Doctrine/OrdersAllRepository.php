@@ -59,8 +59,7 @@ class OrdersAllRepository extends ServiceEntityRepository
             ->setParameter('date_start', $date_start)
             ->setParameter('date_end', $date_end)
             ->setParameter(2,true)
-            ->getQuery()
-            ->getResult();
+          ;
     }
 
     public function getNewPosOrdersUsersManager($page, $limit, $users = [])
