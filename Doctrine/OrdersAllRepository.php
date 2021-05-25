@@ -56,10 +56,10 @@ class OrdersAllRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->setParameter('users',$users)
             ->setParameter('search', '%'.$search.'%')
-            ->setParameter('date_start', $date_start)
-            ->setParameter('date_end', $date_end)
+            ->setParameter('date_start', $date_start->format('Y-m-d 00:00:00'))
+            ->setParameter('date_end', $date_end->format('Y-m-d 23:59:59'))
             ->setParameter(2,true)
-          ;
+            ;
     }
 
     public function getNewPosOrdersUsersManager($page, $limit, $users = [])
@@ -209,4 +209,33 @@ class OrdersAllRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+
+    // /**
+    //  * @return OrdersAll[] Returns an array of OrdersAll objects
+    //  */
+    /*
+    public function findByExampleField($value)
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.exampleField = :val')
+            ->setParameter('val', $value)
+            ->orderBy('o.id', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+    */
+
+    /*
+    public function findOneBySomeField($value): ?OrdersAll
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.exampleField = :val')
+            ->setParameter('val', $value)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+    */
 }
