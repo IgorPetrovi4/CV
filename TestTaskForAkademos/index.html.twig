@@ -1,0 +1,143 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello ConditionTestController!{% endblock %}
+
+{% block body %}
+
+    <div class="example-wrapper">
+        <h4>Уникальные символы - {{ unique }}</h4>
+        <h4>Остатков - {{ transfer }}</h4>
+
+
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+
+        /*2. JS
+
+You're working on the web application that's about to be used in a country with a weird formatting of phone numbers.
+They add dashes only before and after each group of odd digits. Let's write a function for this. See examples for more details.
+
+function addDashes(num) {
+	// ...
+}
+
+console.log(addDashes(645545965)); // '64-55-4-59-6-5'
+console.log(addDashes(411222333)); // '4-11-222-333'
+console.log(addDashes(81229576231)); // '8-1-22-957-62-31'*/
+
+        function addDashes(num) {
+            let input = String(num);
+            let output = "";
+            let save;
+            for (let i = 0; i < input.length; i++) {
+
+                if (input[i] % 2 === 1 && save % 2 === 0 || input[i] % 2 === 0 && save % 2 === 1) {
+                    output += '-' + input[i];
+                } else {
+                    output += input[i];
+                }
+                save = input[i];
+            }
+            return output;
+        }
+
+        console.log(addDashes(81229576231));
+
+
+        /*3. JS
+
+We'd like you to write a simple autocomplete function. It will take in an input string and a dictionary array and return the values from the dictionary that start with the input string.
+No need to code an actual autocomplete control with HTML etc, just a function.
+
+function autocomplete(search, dictionary, results_limit)
+
+The function must meet the following requirements:
+- If the current input returns nothing, try to cut off last characters one by one until it does or no characters left. E.g.
+autocomplete('panic', ['Panda', 'pants', 'span', 'panel', 'picnic', 'pacman'], 5) should still return ['Panda','pants','panel'] because 'panic' doesn't match anything, neither 'pani', but 'pan' has 3 matches.
+- Any non-letter should be skipped like if wasn't there. For example, an input of "$#@" should be treated as "" and "a1b@c2d" must be equal to "abcd".
+- Limit results to a first `results_limit` matches, where `results_limit` is the third parameter of a function.
+- If no matches, return an empty array.
+- The search must be be case-insensitive, but the results must be in their original case.*/
+
+        $(function () {
+            let dictionary = ['Panda', 'pants', 'span', 'panel', 'picnic', 'pacman'];
+            let search = 'pAn@-ic';
+            let results_limit = 5;
+            let min_line_length = 3;
+            console.log(autocomplete(search, dictionary, results_limit, min_line_length));
+        })
+
+        function autocomplete(search, dictionary, results_limit, min_line_length = 1) {
+            let replace_search = search.toLowerCase().replace(/[^a-zа-яё]/gi, '');
+            let rezArray = dictionary.filter(dictionary => dictionary.toString().toLowerCase().startsWith(replace_search.toLowerCase()));
+
+            if (dictionary.length === 0) {
+                return dictionary;
+            } else {
+                for (let i = 0; replace_search.length > min_line_length; i++) {
+                    replace_search = replace_search.substr(0, replace_search.length - 1);
+                    rezArray = dictionary.filter(dictionary => dictionary.toString().toLowerCase().startsWith(replace_search.toLowerCase()));
+                }
+
+                return rezArray.slice(0, results_limit);
+            }
+
+        }
+
+
+        /*5. JS
+
+We have a rectangular field with some buildings on it. Each building consists of one or more squares (each square marked as X).
+We need a function that calculates the total perimeter of all buildings.
+The field is given as a 2D array.
+For example:
+
+calcPerimeter([' X']) // The function must return 4.
+
+calcPerimeter([
+	'X',
+	'X',
+	' ',
+]) // Must return 6
+
+calcPerimeter([
+	'X   X ',
+	'X   X ',
+	'    X ',
+	'XX  X ',
+	' X    ',
+]) // Must return 24*/    //->> тут ошибка , должно вывести 28
+
+        $(function () {
+            let arrX = [
+                'X   X ',
+                'X   X ',
+                '    X ',
+                'XX  X ',
+                ' X    ',
+            ];
+            console.log(calcPerimeter(arrX));
+        })
+
+        function calcPerimeter(arrX) {
+            let newArrX = [];
+            for (let i = 0; i < arrX.length; i++) {
+                let build = arrX[i].replace(/\s/g, '').length;
+                if (build !== 0) {
+                    newArrX.push((build * 4 / 2) + 2);
+                }
+            }
+            let sum = newArrX.reduce((a, b) => a + b, 0);
+            console.log(newArrX)
+
+            return sum;
+        }
+
+
+    </script>
+
+{% endblock %}
