@@ -92,62 +92,123 @@ carry([123, 123, 804]); // 2*/
 
 
 
-
     /*
-6. MySQL
+   6. MySQL
 
-We have the following tables:
+   We have the following tables:
 
-Table: branch
-Fields:
-id int (pk)
-name varchar
+   Table: branch
+   Fields:
+   id int (pk)
+   name varchar
 
-Table: person
-Fields:
-id int (pk)
-office_id int not null
-chief_id int
-name varchar
-wage float
+   Table: person
+   Fields:
+   id int (pk)
+   office_id int not null
+   chief_id int
+   name varchar
+   wage float
 
-Please write SQL queries for:
+   Please write SQL queries for:
 
-a) Select all people, who get paid more than their direct chiefs
-b) Select a list of all offices along with a person with the highest wage in each. if more than one person has the highest wage, display them all. The office should be selected even if it has no people.
-c) Select all chiefs, who have exactly one direct subordinate.
-d) Select all offices sorted by total wage of people in it, descending.*/
-    //---->  не очень понятно условие
+   a) Select all people, who get paid more than their direct chiefs
+   b) Select a list of all offices along with a person with the highest wage in each. if more than one person has the highest wage, display them all. The office should be selected even if it has no people.
+   c) Select all chiefs, who have exactly one direct subordinate.
+   d) Select all offices sorted by total wage of people in it, descending.*/
 
     public function query()
     {
-        $mysqli = new mysqli("example.com", "user", "password", "database");
-
-        $mysqli->query("    
-                                SELECT *
-                                FROM Person
-                                LEFT JOIN Cheif
-                                ON Person.wage > Cheif.wage;
-                                ");
-
-        $mysqli->query("    
-                                SELECT office_id, MAX(wage)
-                                FROM Person
-                                GROUP BY office_id ;
-                                ");
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+        $mysqli = new mysqli("", "", "", "");
 
 
-        $mysqli->query("    
-                                SELECT *
-                                FROM Person
-                                WHERE cheif_id NOT NULL;
-                                ");
+//        $mysqli->query("CREATE TABLE IF NOT EXISTS branch (
+//    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+//    name VARCHAR(255)
+//                    ) ENGINE=InnoDB CHARSET=utf8;
+//                    ");
 
-        $mysqli->query("    
-                                SELECT office_id
-                                FROM Person
-                                ORDER BY wage ;
-                                ");
+
+//        $mysqli->query("CREATE TABLE IF NOT EXISTS person (
+//    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+//    office_id INT NOT NULL,
+//    chief_id INT,
+//    name VARCHAR(255),
+//    wage FLOAT
+//                    ) ENGINE=InnoDB CHARSET=utf8;
+//                    ");
+
+//        $mysqli->query("INSERT INTO branch ( id, name) VALUES
+//    (1, 'Kyiv'),
+//    (2, 'Odessa'),
+//    (3, 'Dnipro'),
+//    (4, 'Harkiv')
+//    ");
+
+//                $mysqli->query("INSERT INTO person (id, office_id, chief_id, name, wage) VALUES
+//    (1, 4, NULL, 'CTO Zhorik', 10000),
+//    (2, 1, 1, 'Team Lead Vasya', 5000),
+//    (3, 1, 2, 'Junior Dev Petya', 1000),
+//    (4, 1, 2, 'Middle Dev Sasha', 3000),
+//    (5, 1, 2, 'Senior System Architect Anton', 8000),
+//    (6, 2, 1, 'Team Lead Igor', 3500),
+//    (7, 2, 6, 'Middle Dev Lyolik', 3500),
+//    (8, 2, 6, 'Middle Dev Bolik', 3500),
+//    (9, 4, 6, 'Team Lead Tolik', 4000),
+//    (10, 4, 9, 'Middle Dev Lexa', 3500);
+//    ");
+
+
+        //  a) Select all people, who get paid more than their direct chiefs
+
+        $mysqli->query("  SELECT  person.name, person.wage
+                                        FROM person
+                                        JOIN person AS chief
+                                            ON chief.id = person.chief_id
+                                        WHERE person.wage > chief.wage;
+                                        ");
+
+
+        //b) Select a list of all offices along with a person with the highest wage in each.
+        // if more than one person has the highest wage, display them all.
+        // The office should be selected even if it has no people.
+
+
+        $mysqli->query(" SELECT branch.*, person.*
+                                        FROM branch
+                                        LEFT JOIN person
+                                            ON person.office_id = branch.id
+                                        LEFT JOIN (
+                                            SELECT person.office_id, MAX(person.wage) AS max_wage FROM person  GROUP BY person.office_id
+                                        ) AS s ON s.office_id = person.office_id
+                                        WHERE person.wage = s.max_wage;
+                                    
+                                    ");
+
+
+        //c) Select all chiefs, who have exactly one direct subordinate.
+
+        $mysqli->query("SELECT chief.* 
+                                        FROM person 
+                                        JOIN person AS chief
+                                            ON chief.id = person.chief_id
+                                        WHERE chief.id IN (
+                                            SELECT chief_id FROM person GROUP BY chief_id HAVING COUNT(*) = 1 
+                                        )
+                                                                 
+                                        ");
+
+
+        //d) Select all offices sorted by total wage of people in it, descending.
+
+        $mysqli->query("SELECT *, (
+                                        SELECT SUM(wage) 
+                                        FROM person
+                                        WHERE person.office_id = branch.id ) AS wage  
+                                        FROM branch  
+                                            ORDER BY wage DESC
+                                        ");
 
     }
 
