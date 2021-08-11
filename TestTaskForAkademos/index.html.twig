@@ -110,7 +110,7 @@ calcPerimeter([
 	'    X ',
 	'XX  X ',
 	' X    ',
-]) // Must return 24*/    //->> тут ошибка , должно вывести 28
+]) // Must return 24*/
 
         $(function () {
             let arrX = [
@@ -120,21 +120,25 @@ calcPerimeter([
                 'XX  X ',
                 ' X    ',
             ];
+            calcPerimeter(arrX);
             console.log(calcPerimeter(arrX));
         })
 
         function calcPerimeter(arrX) {
-            let newArrX = [];
+            let matrix = [];
             for (let i = 0; i < arrX.length; i++) {
-                let build = arrX[i].replace(/\s/g, '').length;
-                if (build !== 0) {
-                    newArrX.push((build * 4 / 2) + 2);
+                matrix.push(arrX[i].split(''));
+            }
+            let rez = [];
+            for (let index in matrix) {
+                let newArr = matrix.map(el => el[index]);
+                let elemX = newArr.filter(x => x === 'X').length;
+                if (elemX !== 0) {
+                    let countX = (elemX * 4 / 2) + 2;
+                    rez.push(countX);
                 }
             }
-            let sum = newArrX.reduce((a, b) => a + b, 0);
-            console.log(newArrX)
-
-            return sum;
+            return rez.reduce((a, b) => a + b, 0);
         }
 
 
