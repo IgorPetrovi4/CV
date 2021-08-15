@@ -7,9 +7,8 @@
     <div class="example-wrapper">
         <h4>Уникальные символы - {{ unique }}</h4>
         <h4>Остатков - {{ transfer }}</h4>
-
-
     </div>
+
 {% endblock %}
 
 {% block javascripts %}
@@ -42,7 +41,7 @@ console.log(addDashes(81229576231)); // '8-1-22-957-62-31'*/
                 }
                 save = input[i];
             }
-            return output;
+            return 'dashes' + ' = ' + output;
         }
 
         console.log(addDashes(81229576231));
@@ -83,7 +82,7 @@ autocomplete('panic', ['Panda', 'pants', 'span', 'panel', 'picnic', 'pacman'], 5
                     rezArray = dictionary.filter(dictionary => dictionary.toString().toLowerCase().startsWith(replace_search.toLowerCase()));
                 }
 
-                return rezArray.slice(0, results_limit);
+                return 'autocomplete' + ' = ' + rezArray.slice(0, results_limit);
             }
 
         }
@@ -110,38 +109,68 @@ calcPerimeter([
 	'    X ',
 	'XX  X ',
 	' X    ',
-]) // Must return 24*/
+]) // Must return 24
+[' X    X '] 8
+ ['XX'] 6
+
+*/
 
         $(function () {
             let arrX = [
-                'X   X ',
-                'X   X ',
-                '    X ',
-                'XX  X ',
-                ' X    ',
+                ' X    X '
             ];
             calcPerimeter(arrX);
             console.log(calcPerimeter(arrX));
         })
 
         function calcPerimeter(arrX) {
+
+            let countRowArr = 0
             let matrix = [];
             for (let i = 0; i < arrX.length; i++) {
                 matrix.push(arrX[i].split(''));
+                countRowArr = arrX[i].length;
             }
-            let rez = [];
-            for (let index in matrix) {
-                let newArr = matrix.map(el => el[index]);
-                let elemX = newArr.filter(x => x === 'X').length;
-                if (elemX !== 0) {
-                    let countX = (elemX * 4 / 2) + 2;
-                    rez.push(countX);
+
+            let newArr = [];
+            for (let iX = 0; iX < countRowArr; iX++) {
+                newArr[iX] = matrix.map(el => el[iX]);
+            }
+
+            let countElemX = 0;
+            let crossing = 0;
+            let preElemMatrix = "";
+            for (let a = 0; a < matrix.length; a++) {
+                for (let b = 0; b < matrix[a].length; b++) {
+                    if (matrix[a][b] === preElemMatrix && preElemMatrix === "X") {
+                        crossing++;
+                    }
+                    if (matrix[a][b] === "X") {
+                        preElemMatrix = "X";
+                        countElemX++;
+                    } else {
+                        preElemMatrix = " ";
+                    }
                 }
             }
-            return rez.reduce((a, b) => a + b, 0);
+
+            let preElemNewArr = "";
+            for (let a = 0; a < newArr.length; a++) {
+                if (newArr[a].length > 1 && newArr.length > 1) {
+                    for (let b = 0; b < newArr[a].length; b++) {
+                        if (newArr[a][b] === preElemNewArr && preElemNewArr === "X") {
+                            crossing++;
+                        }
+                        if (newArr[a][b] === "X") {
+                            preElemNewArr = "X";
+                        } else {
+                            preElemNewArr = " ";
+                        }
+                    }
+                }
+            }
+            return 'Perimeter' + ' = ' + ((countElemX * 4) - (crossing * 2));
         }
-
-
     </script>
 
 {% endblock %}

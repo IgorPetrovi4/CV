@@ -73,21 +73,36 @@ carry([123, 123, 804]); // 2*/
 
     public function transfer(array $arr): int
     {
-
-
         $split_arr = [];
         foreach ($arr as $value) {
             $split_arr[] = str_split($value);
         }
 
-        $rez = 0;
-        for ($i = 0; $i <= count($split_arr); $i++) {
-            $sum = array_sum( array_column($split_arr, $i));
-            if ($sum > 9) {
-                $rez++;
-            }
+        $ar_revers = [];
+        foreach ($split_arr as $value2) {
+            $ar_revers[] = array_reverse($value2);
         }
-        return $rez;
+
+        $arr_count = [];
+        $carry = 0;
+        $remainder = 0;
+        for ($i = 0; $i < count(max($ar_revers)); $i++) {
+            foreach ($ar_revers as $row) {
+                foreach ($row as $key => $value) {
+                    if ($key === $i) {
+                        $arr_count[$key][] = $value;
+                    }
+                }
+            }
+            if (array_sum($arr_count[$i]) > 9) {
+                $remainder = 1;
+            }
+
+            $carry += intdiv(array_sum($arr_count[$i]) + $remainder, 10);
+            $arr_count = [];
+        }
+
+        return $carry;
     }
 
 
